@@ -1,3 +1,4 @@
+import { createClient } from "@supabase/supabase-js";
 import React from "react";
 import { StyledRegisterVideo } from "./styles";
 
@@ -21,9 +22,18 @@ function useForm(propsDoForm) {
     };
 }
 
+const PROJECT_URL = "https://mnhktyecqphhhcfpqari.supabase.co";
+const PUBLIC_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1uaGt0eWVjcXBoaGhjZnBxYXJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NjgyODIzMjQsImV4cCI6MTk4Mzg1ODMyNH0.b34z6t5V2W89GAYXY2JrVdg06-6GeqOWk_cXaI37FKw";
+const supabase = createClient(PROJECT_URL, PUBLIC_KEY);
+
+// get youtube thumbnail from video url
+function getThumbnail(url) {
+    return `https://img.youtube.com/vi/${url.split("v=")[1]}/hqdefault.jpg`;
+}
+
 export default function RegisterVideo() {
     const formCadastro = useForm({
-        initialValues: { titulo: "", url: "" }
+        initialValues: { titulo: "GTA 5", url: "https://www.youtube.com/watch?v=3DBrG2YjqQA" }
     });
     const [formVisivel, setFormVisivel] = React.useState(false);
 
@@ -36,7 +46,20 @@ export default function RegisterVideo() {
                 ? (
                     <form onSubmit={(evento) => {
                         evento.preventDefault();
-                        console.log(formCadastro.values);
+
+                        // Contrato entre o nosso Front e o BackEnd
+                        supabase.from("video").insert({
+                            title: formCadastro.values.titulo,
+                            url: formCadastro.values.url,
+                            thumb: getThumbnail(formCadastro.values.url),
+                            playlist: "jogos",
+                         })
+                         .then((oqueveio) => {
+                            console.log(oqueveio);
+                         })
+                         .catch((err) => {
+                            console.log(err);
+                         })
 
                         setFormVisivel(false);
                         formCadastro.clearForm();
